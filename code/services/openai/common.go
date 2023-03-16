@@ -2,6 +2,7 @@ package openai
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -143,8 +144,16 @@ func (gpt ChatGPT) doAPIRequestWithRetry(url, method string, bodyType requestBod
 func (gpt ChatGPT) sendRequestWithBodyType(link, method string, bodyType requestBodyType,
 	requestBody interface{}, responseBody interface{}) error {
 	var err error
-	client := &http.Client{Timeout: 110 * time.Second}
 	if gpt.HttpProxy == "" {
+		transport := &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
+		client := &http.Client{
+			Transport: transport,
+			Timeout:   110 * time.Second,
+		}
 		err = gpt.doAPIRequestWithRetry(link, method, bodyType,
 			requestBody, responseBody, client, 3)
 	} else {
@@ -154,6 +163,9 @@ func (gpt ChatGPT) sendRequestWithBodyType(link, method string, bodyType request
 		}
 		transport := &http.Transport{
 			Proxy: http.ProxyURL(proxyUrl),
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
 		}
 		proxyClient := &http.Client{
 			Transport: transport,
