@@ -94,14 +94,20 @@ func (gpt ChatGPT) doAPIRequestWithRetry(url, method string, bodyType requestBod
 	var retry int
 	for retry = 0; retry <= maxRetries; retry++ {
 		response, err = client.Do(req)
-		//fmt.Println("--------------------")
-		//fmt.Println("req", req.Header)
-		//fmt.Printf("response: %v", response)
+		fmt.Println("--------------------")
+		fmt.Println("req", req.Header)
+		fmt.Printf("response: %v", response)
 		// read body
 		if err != nil || response.StatusCode < 200 || response.StatusCode >= 300 {
 
-			body, _ := ioutil.ReadAll(response.Body)
-			fmt.Println("body", string(body))
+			if err != nil {
+				fmt.Println("err:", err)
+			}
+
+			if response != nil {
+				body, _ := ioutil.ReadAll(response.Body)
+				fmt.Println("body", string(body))
+			}
 
 			gpt.Lb.SetAvailability(api.Key, false)
 			if retry == maxRetries {
