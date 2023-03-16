@@ -1,0 +1,36 @@
+FROM golang as golang
+
+ENV GO111MODULE=on \
+    CGO_ENABLED=1 \
+    GOPROXY=https://goproxy.cn,direct
+
+# Build Delve
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+
+WORKDIR /build
+ADD /code /build
+
+### Remote Debug Mode
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -gcflags="all=-N -l" -o feishu_chatgpt
+#####
+
+#RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-w -s' -o feishu_chatgpt
+
+# FROM alpine:latest
+FROM debian:buster
+
+WORKDIR /dist
+
+RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+# RUN apk add --no-cache bash
+COPY --from=golang /build/config.example.yaml /dist/config.yaml
+COPY --from=golang /build/feishu_chatgpt /dist
+COPY --from=golang /go/bin/dlv /dist
+#ADD entrypoint.sh /dist/entrypoint.sh
+ADD entrypoint.debug.sh /dist/entrypoint.sh
+
+RUN chmod +x /dist/entrypoint.sh
+# 40000 is for debug
+EXPOSE 9000 40000
+
+CMD /dist/entrypoint.sh
