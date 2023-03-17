@@ -127,7 +127,7 @@ func withSplitLine() larkcard.MessageCardElement {
 func withHeader(title string, color string) *larkcard.
 	MessageCardHeader {
 	if title == "" {
-		title = "🤖️机器人提醒"
+		title = "🐈毛毛的提醒"
 	}
 	header := larkcard.NewMessageCardHeader().
 		Template(color).
@@ -535,7 +535,7 @@ func sendMsg(ctx context.Context, msg string, chatId *string) error {
 func sendClearCacheCheckCard(ctx context.Context,
 	sessionId *string, msgId *string) {
 	newCard, _ := newSendCard(
-		withHeader("🆑 机器人提醒", larkcard.TemplateBlue),
+		withHeader("🆑 毛毛提醒", larkcard.TemplateBlue),
 		withMainMd("您确定要清除对话上下文吗？"),
 		withNote("请注意，这将开始一个全新的对话，您将无法利用之前话题的历史信息"),
 		withClearDoubleCheckBtn(sessionId))
@@ -575,7 +575,7 @@ func sendPicCreateInstructionCard(ctx context.Context,
 func sendPicModeCheckCard(ctx context.Context,
 	sessionId *string, msgId *string) {
 	newCard, _ := newSendCard(
-		withHeader("🖼️ 机器人提醒", larkcard.TemplateBlue),
+		withHeader("🖼️ 毛毛提醒", larkcard.TemplateBlue),
 		withMainMd("收到图片，是否进入图片创作模式？"),
 		withNote("请注意，这将开始一个全新的对话，您将无法利用之前话题的历史信息"),
 		withPicModeDoubleCheckBtn(sessionId))
@@ -603,7 +603,7 @@ func sendHelpCard(ctx context.Context,
 	sessionId *string, msgId *string) {
 	newCard, _ := newSendCard(
 		withHeader("🎒需要帮助吗？", larkcard.TemplateBlue),
-		withMainMd("**我是小飞机，一款基于chatGpt技术的智能聊天机器人！**"),
+		withMainMd("**我是你可爱又粘人的毛毛！**"),
 		withSplitLine(),
 		withMdAndExtraBtn(
 			"** 🆑 清除话题上下文**\n文本回复 *清除* 或 */clear*",

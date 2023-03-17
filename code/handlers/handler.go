@@ -97,7 +97,7 @@ func CommonProcessClearCache(cardMsg CardMsg, session services.SessionServiceCac
 	interface{}, error, bool) {
 	if cardMsg.Value == "1" {
 		newCard, _ := newSendCard(
-			withHeader("️🆑 机器人提醒", larkcard.TemplateRed),
+			withHeader("️🆑 毛毛提醒", larkcard.TemplateRed),
 			withMainMd("已删除此话题的上下文信息"),
 			withNote("我们可以开始一个全新的话题，继续找我聊天吧"),
 		)
@@ -106,7 +106,7 @@ func CommonProcessClearCache(cardMsg CardMsg, session services.SessionServiceCac
 	}
 	if cardMsg.Value == "0" {
 		newCard, _ := newSendCard(
-			withHeader("️🆑 机器人提醒", larkcard.TemplateGreen),
+			withHeader("️🆑 毛毛提醒", larkcard.TemplateGreen),
 			withMainMd("依旧保留此话题的上下文信息"),
 			withNote("我们可以继续探讨这个话题,期待和您聊天。如果您有其他问题或者想要讨论的话题，请告诉我哦"),
 		)
@@ -136,7 +136,7 @@ func CommonProcessPicModeChange(cardMsg CardMsg,
 	}
 	if cardMsg.Value == "0" {
 		newCard, _ := newSendCard(
-			withHeader("️🎒 机器人提醒", larkcard.TemplateGreen),
+			withHeader("️🎒 毛毛提醒", larkcard.TemplateGreen),
 			withMainMd("依旧保留此话题的上下文信息"),
 			withNote("我们可以继续探讨这个话题,期待和您聊天。如果您有其他问题或者想要讨论的话题，请告诉我哦"),
 		)
@@ -198,7 +198,7 @@ func (m MessageHandler) msgReceivedHandler(ctx context.Context, event *larkim.P2
 	}
 	actions := []Action{
 		&ProcessedUniqueAction{}, //避免重复处理
-		&ProcessMentionAction{},  //判断机器人是否应该被调用
+		&ProcessMentionAction{},  //判断毛毛是否应该被调用
 		&AudioAction{},           //语音处理
 		&PicAction{},             //图片处理
 		&EmptyAction{},           //空消息处理

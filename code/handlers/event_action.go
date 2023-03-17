@@ -3,13 +3,14 @@ package handlers
 import (
 	"context"
 	"fmt"
-	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 	"os"
 	"start-feishubot/initialization"
 	"start-feishubot/services"
 	"start-feishubot/services/openai"
 	"start-feishubot/utils"
 	"start-feishubot/utils/audio"
+
+	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 )
 
 type MsgInfo struct {
@@ -67,7 +68,7 @@ type EmptyAction struct { /*空消息*/
 
 func (*EmptyAction) Execute(a *ActionInfo) bool {
 	if len(a.info.qParsed) == 0 {
-		sendMsg(*a.ctx, "🤖️：你想知道什么呢~", a.info.chatId)
+		sendMsg(*a.ctx, "🐈：你想知道什么呢~", a.info.chatId)
 		fmt.Println("msgId", *a.info.msgId,
 			"message.text is empty")
 		return false
@@ -156,7 +157,7 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 		//fmt.Println(resp, err)
 		if err != nil {
 			//fmt.Println(err)
-			fmt.Sprintf("🤖️：图片下载失败，请稍后再试～\n 错误信息: %v", err)
+			fmt.Sprintf("🐈：图片下载失败，请稍后再试～\n 错误信息: %v", err)
 			return false
 		}
 
@@ -172,14 +173,14 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 		//图片校验
 		err = openai.VerifyPngs([]string{f})
 		if err != nil {
-			replyMsg(*a.ctx, fmt.Sprintf("🤖️：无法解析图片，请发送原图并尝试重新操作～"),
+			replyMsg(*a.ctx, fmt.Sprintf("🐈：无法解析图片，请发送原图并尝试重新操作～"),
 				a.info.msgId)
 			return false
 		}
 		bs64, err := a.handler.gpt.GenerateOneImageVariation(f, resolution)
 		if err != nil {
 			replyMsg(*a.ctx, fmt.Sprintf(
-				"🤖️：图片生成失败，请稍后再试～\n错误信息: %v", err), a.info.msgId)
+				"🐈：图片生成失败，请稍后再试～\n错误信息: %v", err), a.info.msgId)
 			return false
 		}
 		replayImagePlainByBase64(*a.ctx, bs64, a.info.msgId)
@@ -195,7 +196,7 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 			resolution)
 		if err != nil {
 			replyMsg(*a.ctx, fmt.Sprintf(
-				"🤖️：图片生成失败，请稍后再试～\n错误信息: %v", err), a.info.msgId)
+				"🐈：图片生成失败，请稍后再试～\n错误信息: %v", err), a.info.msgId)
 			return false
 		}
 		replayImageCardByBase64(*a.ctx, bs64, a.info.msgId, a.info.sessionId,
@@ -217,7 +218,7 @@ func (*MessageAction) Execute(a *ActionInfo) bool {
 	completions, err := a.handler.gpt.Completions(msg)
 	if err != nil {
 		replyMsg(*a.ctx, fmt.Sprintf(
-			"🤖️：消息机器人摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
+			"🐈：毛毛摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
 		return false
 	}
 	msg = append(msg, completions)
@@ -232,7 +233,7 @@ func (*MessageAction) Execute(a *ActionInfo) bool {
 	err = replyMsg(*a.ctx, completions.Content, a.info.msgId)
 	if err != nil {
 		replyMsg(*a.ctx, fmt.Sprintf(
-			"🤖️：消息机器人摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
+			"🐈：毛毛摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
 		return false
 	}
 	return true
@@ -276,7 +277,7 @@ func (*AudioAction) Execute(a *ActionInfo) bool {
 		if err != nil {
 			fmt.Println(err)
 
-			sendMsg(*a.ctx, fmt.Sprintf("🤖️：语音转换失败，请稍后再试～\n错误信息: %v", err), a.info.msgId)
+			sendMsg(*a.ctx, fmt.Sprintf("🐈：语音转换失败，请稍后再试～\n错误信息: %v", err), a.info.msgId)
 			return false
 		}
 		//fmt.Println("text: ", text)
