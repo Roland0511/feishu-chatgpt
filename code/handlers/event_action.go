@@ -288,6 +288,8 @@ func (*AudioAction) Execute(a *ActionInfo) bool {
 			sendMsg(*a.ctx, fmt.Sprintf("🐈：语音转换失败，请稍后再试～\n错误信息: %v", err), a.info.msgId)
 			return false
 		}
+
+		replyMsg(*a.ctx, fmt.Sprintf("🤖️：%s", text), a.info.msgId)
 		//fmt.Println("text: ", text)
 		a.info.qParsed = text
 		return true
