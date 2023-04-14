@@ -23,7 +23,6 @@ type Config struct {
 	KeyFile                    string
 	OpenaiApiUrl               string
 	HttpProxy                  string
-	DefaultCharacter           string
 	MMApiUrl                   string
 }
 
@@ -51,7 +50,6 @@ func LoadConfig(cfg string) *Config {
 		KeyFile:                    getViperStringValue("KEY_FILE", "key.pem"),
 		OpenaiApiUrl:               getViperStringValue("API_URL", "https://api.openai.com"),
 		HttpProxy:                  getViperStringValue("HTTP_PROXY", ""),
-		DefaultCharacter:           getViperStringValue("DEFAULT_CHARACTER", ""),
 		MMApiUrl:                   getViperStringValue("MM_API_URL", "http://127.0.0.1:3000"),
 	}
 

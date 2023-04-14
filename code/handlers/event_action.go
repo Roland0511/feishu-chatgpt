@@ -212,12 +212,6 @@ type MessageAction struct { /*消息*/
 
 func (*MessageAction) Execute(a *ActionInfo) bool {
 	var msg []openai.Messages
-	character := a.handler.config.DefaultCharacter
-	if character != "" { //如果有默认角色，追加系统设定
-		msg = append([]openai.Messages{}, openai.Messages{
-			Role: "system", Content: character,
-		})
-	}
 	historyMsgs := a.handler.sessionCache.GetMsg(*a.info.sessionId)
 	msg = append(msg, historyMsgs...)
 	msg = append(msg, openai.Messages{
