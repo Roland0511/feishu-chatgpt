@@ -19,3 +19,5 @@ API_URL: https://api.openai.com
 HTTP_PROXY: ""
 # 默认角色设定
 DEFAULT_CHARACTER: ""
+# Maomao Service Url
+MM_API_URL: "http://127.0.0.1:3000"

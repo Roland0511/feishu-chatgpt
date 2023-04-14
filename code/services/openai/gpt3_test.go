@@ -7,7 +7,7 @@ import (
 )
 
 func TestCompletions(t *testing.T) {
-	config := initialization.LoadConfig("../../config.yaml")
+	config := initialization.LoadConfig("../../../config.yaml")
 
 	msgs := []Messages{
 		{Role: "system", Content: "你是一个专业的翻译官，负责中英文翻译。"},

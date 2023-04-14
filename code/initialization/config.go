@@ -24,6 +24,7 @@ type Config struct {
 	OpenaiApiUrl               string
 	HttpProxy                  string
 	DefaultCharacter           string
+	MMApiUrl                   string
 }
 
 func LoadConfig(cfg string) *Config {
@@ -51,6 +52,7 @@ func LoadConfig(cfg string) *Config {
 		OpenaiApiUrl:               getViperStringValue("API_URL", "https://api.openai.com"),
 		HttpProxy:                  getViperStringValue("HTTP_PROXY", ""),
 		DefaultCharacter:           getViperStringValue("DEFAULT_CHARACTER", ""),
+		MMApiUrl:                   getViperStringValue("MM_API_URL", "http://127.0.0.1:3000"),
 	}
 
 	return config

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"start-feishubot/initialization"
 	"start-feishubot/services"
+	"start-feishubot/services/mmai"
 	"start-feishubot/services/openai"
 	"strings"
 
@@ -28,6 +29,7 @@ type MessageHandler struct {
 	sessionCache services.SessionServiceCacheInterface
 	msgCache     services.MsgCacheInterface
 	gpt          *openai.ChatGPT
+	mm           *mmai.MMGPT
 	config       initialization.Config
 }
 
@@ -214,12 +216,15 @@ func (m MessageHandler) msgReceivedHandler(ctx context.Context, event *larkim.P2
 
 var _ MessageHandlerInterface = (*MessageHandler)(nil)
 
-func NewMessageHandler(gpt *openai.ChatGPT,
+func NewMessageHandler(
+	gpt *openai.ChatGPT,
+	mm *mmai.MMGPT,
 	config initialization.Config) MessageHandlerInterface {
 	return &MessageHandler{
 		sessionCache: services.GetSessionCache(),
 		msgCache:     services.GetMsgCache(),
 		gpt:          gpt,
+		mm:           mm,
 		config:       config,
 	}
 }
