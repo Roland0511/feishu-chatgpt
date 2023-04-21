@@ -2,10 +2,12 @@ package mmai
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -14,9 +16,12 @@ import (
 	"start-feishubot/services/openai"
 	"strings"
 	"time"
+
+	goopenai "github.com/sashabaranov/go-openai"
 )
 
 type MMGPT struct {
+	ApiKey    string
 	ApiUrl    string
 	HttpProxy string
 }
@@ -171,6 +176,51 @@ type ChatGPTRequestBody struct {
 	TopP             int               `json:"top_p"`
 	FrequencyPenalty int               `json:"frequency_penalty"`
 	PresencePenalty  int               `json:"presence_penalty"`
+	Stream           bool              `json:"stream"`
+}
+
+type CompletionsWithStreamRespCallback func(resp openai.Messages, err error)
+
+func (gpt MMGPT) CompletionsWithStream(msg []openai.Messages, callback CompletionsWithStreamRespCallback) error {
+	config := goopenai.DefaultConfig(gpt.ApiKey)
+	config.BaseURL = gpt.ApiUrl + "/v1"
+
+	c := goopenai.NewClientWithConfig(config)
+	ctx := context.Background()
+
+	req := goopenai.ChatCompletionRequest{
+		Model:     goopenai.GPT3Dot5Turbo,
+		MaxTokens: 20,
+		Messages:  msg,
+		Stream:    true,
+	}
+	stream, err := c.CreateChatCompletionStream(ctx, req)
+	if err != nil {
+		fmt.Printf("ChatCompletionStream error: %v\n", err)
+		return err
+	}
+	defer stream.Close()
+
+	fmt.Printf("Stream response: ")
+	for {
+		response, streamErr := stream.Recv()
+		if errors.Is(streamErr, io.EOF) {
+			fmt.Println("\nStream finished")
+			return nil
+		}
+
+		if streamErr != nil {
+			fmt.Printf("\nStream error: %v\n", streamErr)
+			callback(openai.Messages{}, streamErr)
+			return streamErr
+		}
+
+		resp := openai.Messages{
+			Content: response.Choices[0].Delta.Content,
+		}
+		// fmt.Printf(resp.Content)
+		callback(resp, nil)
+	}
 }
 
 func (gpt MMGPT) Completions(msg []openai.Messages) (resp openai.Messages, err error) {
@@ -182,6 +232,7 @@ func (gpt MMGPT) Completions(msg []openai.Messages) (resp openai.Messages, err e
 		TopP:             1,
 		FrequencyPenalty: 0,
 		PresencePenalty:  0,
+		Stream:           false,
 	}
 	gptResponseBody := &ChatGPTResponseBody{}
 	err = gpt.sendRequestWithBodyType(gpt.ApiUrl+"/v1/chat/completions", "POST",
@@ -198,9 +249,11 @@ func (gpt MMGPT) Completions(msg []openai.Messages) (resp openai.Messages, err e
 }
 
 func NewMMGPT(config initialization.Config) *MMGPT {
+	apiKeys := config.OpenaiApiKeys
 	apiUrl := config.MMApiUrl
 	httpProxy := config.HttpProxy
 	return &MMGPT{
+		ApiKey:    apiKeys[0],
 		ApiUrl:    apiUrl,
 		HttpProxy: httpProxy,
 	}

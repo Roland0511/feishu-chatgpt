@@ -11,8 +11,8 @@ func TestCompletions(t *testing.T) {
 	config := initialization.LoadConfig("../../../config.yaml")
 
 	msgs := []openai.Messages{
-		{Role: "system", Content: "你是一个专业的翻译官，负责中英文翻译。"},
-		{Role: "user", Content: "翻译这段话: The assistant messages help store prior responses. They can also be written by a developer to help give examples of desired behavior."},
+		// {Role: "system", Content: "你是一个专业的翻译官，负责中英文翻译。"},
+		{Role: "user", Content: "宇宙探索编辑部 这部电影的主演是谁？"},
 	}
 
 	gpt := NewMMGPT(*config)
@@ -23,6 +23,27 @@ func TestCompletions(t *testing.T) {
 	}
 
 	fmt.Println(resp.Content, resp.Role)
+}
+
+func TestStreamCompletions(t *testing.T) {
+	config := initialization.LoadConfig("../../../config.yaml")
+
+	msgs := []openai.Messages{
+		// {Role: "system", Content: "你是一个专业的翻译官，负责中英文翻译。"},
+		{Role: "user", Content: "宇宙探索编辑部 这部电影的主演是谁？"},
+	}
+
+	gpt := NewMMGPT(*config)
+
+	f := func(resp openai.Messages, err error) {
+		fmt.Println(resp.Content, resp.Role)
+	}
+
+	err := gpt.CompletionsWithStream(msgs, f)
+	if err != nil {
+		t.Errorf("TestCompletions failed with error: %v", err)
+	}
+
 }
 
 // func TestGenerateOneImage(t *testing.T) {

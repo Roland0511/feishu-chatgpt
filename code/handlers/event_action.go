@@ -217,27 +217,36 @@ func (*MessageAction) Execute(a *ActionInfo) bool {
 	msg = append(msg, openai.Messages{
 		Role: "user", Content: a.info.qParsed,
 	})
-	completions, err := a.handler.mm.Completions(msg)
+
+	callback := func(completions openai.Messages, err error) {
+		if err != nil {
+			replyMsg(*a.ctx, fmt.Sprintf(
+				"🐈：毛毛摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
+		}
+		// fmt.Println(completions.Content, completions.Role)
+		msg = append(msg, completions)
+		a.handler.sessionCache.SetMsg(*a.info.sessionId, msg)
+		//if new topic
+		if len(msg) == 2 {
+			//fmt.Println("new topic", msg[1].Content)
+			sendNewTopicCard(*a.ctx, a.info.sessionId, a.info.msgId,
+				completions.Content)
+		} else {
+			err = replyMsg(*a.ctx, completions.Content, a.info.msgId)
+			if err != nil {
+				replyMsg(*a.ctx, fmt.Sprintf(
+					"🐈：毛毛摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
+			}
+		}
+	}
+
+	err := a.handler.mm.CompletionsWithStream(msg, callback) //a.handler.mm.Completions(msg)
 	if err != nil {
 		replyMsg(*a.ctx, fmt.Sprintf(
 			"🐈：毛毛摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
 		return false
 	}
-	msg = append(msg, completions)
-	a.handler.sessionCache.SetMsg(*a.info.sessionId, msg)
-	//if new topic
-	if len(msg) == 2 {
-		//fmt.Println("new topic", msg[1].Content)
-		sendNewTopicCard(*a.ctx, a.info.sessionId, a.info.msgId,
-			completions.Content)
-		return false
-	}
-	err = replyMsg(*a.ctx, completions.Content, a.info.msgId)
-	if err != nil {
-		replyMsg(*a.ctx, fmt.Sprintf(
-			"🐈：毛毛摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
-		return false
-	}
+
 	return true
 }
 

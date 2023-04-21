@@ -2,6 +2,8 @@ package openai
 
 import (
 	"errors"
+
+	openai "github.com/sashabaranov/go-openai"
 )
 
 const (
@@ -10,10 +12,7 @@ const (
 	engine      = "gpt-3.5-turbo"
 )
 
-type Messages struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
+type Messages = openai.ChatCompletionMessage
 
 // ChatGPTResponseBody 请求体
 type ChatGPTResponseBody struct {
