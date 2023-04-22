@@ -217,36 +217,42 @@ func (*MessageAction) Execute(a *ActionInfo) bool {
 	msg = append(msg, openai.Messages{
 		Role: "user", Content: a.info.qParsed,
 	})
-
-	callback := func(completions openai.Messages, err error) {
-		if err != nil {
-			replyMsg(*a.ctx, fmt.Sprintf(
-				"🐈：毛毛摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
-		}
+	streamMsgId := ""
+	var streamCompletion openai.Messages
+	callback := func(completion openai.Messages, err error) {
+		checkError(a, err)
 		// fmt.Println(completions.Content, completions.Role)
-		msg = append(msg, completions)
-		a.handler.sessionCache.SetMsg(*a.info.sessionId, msg)
-		//if new topic
-		if len(msg) == 2 {
-			//fmt.Println("new topic", msg[1].Content)
-			sendNewTopicCard(*a.ctx, a.info.sessionId, a.info.msgId,
-				completions.Content)
+		if streamCompletion.Content == "" {
+			streamCompletion = completion
 		} else {
-			err = replyMsg(*a.ctx, completions.Content, a.info.msgId)
-			if err != nil {
-				replyMsg(*a.ctx, fmt.Sprintf(
-					"🐈：毛毛摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
-			}
+			streamCompletion.Content += completion.Content
+		}
+
+		if streamMsgId == "" {
+			streamMsgId, err = sendMsgCard(*a.ctx, a.info.sessionId, a.info.msgId,
+				streamCompletion.Content)
+			checkError(a, err)
+		} else {
+			err = updateMsgCard(*a.ctx, a.info.sessionId, &streamMsgId, streamCompletion.Content)
+			checkError(a, err)
 		}
 	}
 
-	err := a.handler.mm.CompletionsWithStream(msg, callback) //a.handler.mm.Completions(msg)
+	finishCallback := func(err error) {
+		checkError(a, err)
+		msg = append(msg, streamCompletion)
+		a.handler.sessionCache.SetMsg(*a.info.sessionId, msg)
+	}
+	err := a.handler.mm.CompletionsWithStream(msg, callback, finishCallback) //a.handler.mm.Completions(msg)
+	return checkError(a, err)
+}
+
+func checkError(a *ActionInfo, err error) bool {
 	if err != nil {
 		replyMsg(*a.ctx, fmt.Sprintf(
 			"🐈：毛毛摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
 		return false
 	}
-
 	return true
 }
 

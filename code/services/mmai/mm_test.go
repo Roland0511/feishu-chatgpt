@@ -39,7 +39,11 @@ func TestStreamCompletions(t *testing.T) {
 		fmt.Println(resp.Content, resp.Role)
 	}
 
-	err := gpt.CompletionsWithStream(msgs, f)
+	ff := func(error) {
+		fmt.Println("stream closed")
+	}
+
+	err := gpt.CompletionsWithStream(msgs, f, ff)
 	if err != nil {
 		t.Errorf("TestCompletions failed with error: %v", err)
 	}

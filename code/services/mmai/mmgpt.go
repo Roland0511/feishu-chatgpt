@@ -181,7 +181,9 @@ type ChatGPTRequestBody struct {
 
 type CompletionsWithStreamRespCallback func(resp openai.Messages, err error)
 
-func (gpt MMGPT) CompletionsWithStream(msg []openai.Messages, callback CompletionsWithStreamRespCallback) error {
+type CompletionsWithStreamRespFinishCallback func(err error)
+
+func (gpt MMGPT) CompletionsWithStream(msg []openai.Messages, callback CompletionsWithStreamRespCallback, finishCallback CompletionsWithStreamRespFinishCallback) error {
 	config := goopenai.DefaultConfig(gpt.ApiKey)
 	config.BaseURL = gpt.ApiUrl + "/v1"
 
@@ -206,6 +208,7 @@ func (gpt MMGPT) CompletionsWithStream(msg []openai.Messages, callback Completio
 		response, streamErr := stream.Recv()
 		if errors.Is(streamErr, io.EOF) {
 			fmt.Println("\nStream finished")
+			finishCallback(nil)
 			return nil
 		}
 

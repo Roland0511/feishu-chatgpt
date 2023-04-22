@@ -42,10 +42,35 @@ type MenuOption struct {
 	label string
 }
 
-func replyCard(ctx context.Context,
+func updateCard(ctx context.Context,
 	msgId *string,
 	cardContent string,
 ) error {
+	client := initialization.GetLarkClient()
+	resp, err := client.Im.Message.Patch(ctx, larkim.NewPatchMessageReqBuilder().
+		MessageId(*msgId).
+		Body(larkim.NewPatchMessageReqBodyBuilder().
+			Content(cardContent).
+			Build()).
+		Build())
+	// 处理错误
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	// 服务端错误处理
+	if !resp.Success() {
+		fmt.Println(resp.Code, resp.Msg, resp.RequestId())
+		return err
+	}
+	return nil
+}
+
+func replyCard(ctx context.Context,
+	msgId *string,
+	cardContent string,
+) (string, error) {
 	client := initialization.GetLarkClient()
 	resp, err := client.Im.Message.Reply(ctx, larkim.NewReplyMessageReqBuilder().
 		MessageId(*msgId).
@@ -59,15 +84,16 @@ func replyCard(ctx context.Context,
 	// 处理错误
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return "", err
 	}
 
 	// 服务端错误处理
 	if !resp.Success() {
 		fmt.Println(resp.Code, resp.Msg, resp.RequestId())
-		return err
+		return "", err
 	}
-	return nil
+
+	return *resp.Data.MessageId, nil
 }
 
 func newSendCard(
@@ -162,6 +188,19 @@ func withMainMd(msg string) larkcard.MessageCardElement {
 				Build()).
 			IsShort(true).
 			Build()}).
+		Build()
+	return mainElement
+}
+
+func withMarkdownText(msg string) larkcard.MessageCardElement {
+	// msg, i := processMessage(msg)
+	msg = processUnicode(msg)
+	msg = processQuote(msg)
+	// if i != nil {
+	// 	return nil
+	// }
+	mainElement := larkcard.NewMessageCardMarkdown().
+		Content(msg).
 		Build()
 	return mainElement
 }
@@ -351,11 +390,11 @@ func withPicResolutionBtn(sessionID *string) larkcard.
 
 }
 
-func replyMsg(ctx context.Context, msg string, msgId *string) error {
+func replyMsg(ctx context.Context, msg string, msgId *string) (string, error) {
 	fmt.Println("sendMsg", msg, msgId)
 	msg, i := processMessage(msg)
 	if i != nil {
-		return i
+		return "", i
 	}
 	client := initialization.GetLarkClient()
 	content := larkim.NewTextMsgBuilder().
@@ -374,15 +413,15 @@ func replyMsg(ctx context.Context, msg string, msgId *string) error {
 	// 处理错误
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return "", err
 	}
 
 	// 服务端错误处理
 	if !resp.Success() {
 		fmt.Println(resp.Code, resp.Msg, resp.RequestId())
-		return err
+		return "", err
 	}
-	return nil
+	return *resp.Data.MessageId, nil
 }
 
 func uploadImage(base64Str string) (*string, error) {
@@ -586,13 +625,52 @@ func sendPicModeCheckCard(ctx context.Context,
 	)
 }
 
+func sendMsgCard(ctx context.Context,
+	sessionId *string, msgId *string, content string) (string, error) {
+	newCard, _ := newSendCard(
+		nil,
+		withMarkdownText(content),
+		withNote("提醒：点击对话框回复本条消息，毛毛才能记住上下文哦~"))
+	return replyCard(
+		ctx,
+		msgId,
+		newCard,
+	)
+}
+
+func updateMsgCard(ctx context.Context,
+	sessionId *string, msgId *string, content string) error {
+	newCard, _ := newSendCard(
+		nil,
+		withMarkdownText(content),
+		withNote("提醒：点击对话框回复本条消息，毛毛才能记住上下文哦~"))
+	return updateCard(
+		ctx,
+		msgId,
+		newCard,
+	)
+}
+
 func sendNewTopicCard(ctx context.Context,
-	sessionId *string, msgId *string, content string) {
+	sessionId *string, msgId *string, content string) (string, error) {
 	newCard, _ := newSendCard(
 		withHeader("👻️ 已开启新的话题", larkcard.TemplateBlue),
 		withMainText(content),
-		withNote("提醒：点击对话框参与回复，可保持话题连贯"))
-	replyCard(
+		withNote("提醒：点击对话框回复本条消息，毛毛才能记住上下文哦~"))
+	return replyCard(
+		ctx,
+		msgId,
+		newCard,
+	)
+}
+
+func updateNewTopicCard(ctx context.Context,
+	sessionId *string, msgId *string, content string) error {
+	newCard, _ := newSendCard(
+		withHeader("👻️ 已开启新的话题", larkcard.TemplateBlue),
+		withMainText(content),
+		withNote("提醒：点击对话框回复本条消息，毛毛才能记住上下文哦~"))
+	return updateCard(
 		ctx,
 		msgId,
 		newCard,
@@ -630,7 +708,7 @@ func sendHelpCard(ctx context.Context,
 		// 	" 文本回复 *导出* 或 */export*"),
 		// withSplitLine(),
 		withMainMd("🎰 **连续对话与多话题模式**\n"+
-			" 点击对话框参与回复，可保持话题连贯。同时，单独提问即可开启全新新话题"),
+			" 点击对话框回复本条消息，毛毛才能记住上下文哦~。同时，单独提问即可开启全新新话题"),
 		withSplitLine(),
 		withMainMd("🎒 **需要更多帮助**\n文本回复 *帮助* 或 */help*"),
 	)
