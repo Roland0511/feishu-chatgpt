@@ -233,8 +233,9 @@ func (*MessageAction) Execute(a *ActionInfo) bool {
 				streamCompletion.Content)
 			checkError(a, err)
 		} else {
-			err = updateMsgCard(*a.ctx, a.info.sessionId, &streamMsgId, streamCompletion.Content)
-			checkError(a, err)
+			go updateMsgCard(*a.ctx, a.info.sessionId, &streamMsgId, streamCompletion.Content)
+			// err = updateMsgCard(*a.ctx, a.info.sessionId, &streamMsgId, streamCompletion.Content)
+			// checkError(a, err)
 		}
 	}
 

@@ -35,11 +35,14 @@ func TestStreamCompletions(t *testing.T) {
 
 	gpt := NewMMGPT(*config)
 
+	fullContent := ""
 	f := func(resp openai.Messages, err error) {
 		fmt.Println(resp.Content, resp.Role)
+		fullContent += resp.Content
 	}
 
 	ff := func(error) {
+		fmt.Printf("full content: %s", fullContent)
 		fmt.Println("stream closed")
 	}
 

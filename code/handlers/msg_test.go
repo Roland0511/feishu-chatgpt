@@ -2,12 +2,11 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"start-feishubot/initialization"
 	"testing"
 	"time"
-
-	larkcard "github.com/larksuite/oapi-sdk-go/v3/card"
 )
 
 func TestCardMsg(t *testing.T) {
@@ -16,24 +15,30 @@ func TestCardMsg(t *testing.T) {
 	println(config)
 	ctx := context.Background()
 	newCard, _ := newSendCard(
-		withHeader("👻️ 已开启新的话题", larkcard.TemplateBlue),
+		nil,
 		withMainText("test"),
 		withNote("提醒：点击对话框参与回复，可保持话题连贯"))
-	msgId := "om_f6f58404f1262cce59c1134defba9789"
+	msgId := "om_68ff679096752db83c90c82cc91c7f91"
 	replayMsgId, err := replyCard(ctx, &msgId, newCard)
 
 	if err != nil {
 		log.Fatal(err)
 	}
-	time.Sleep(1 * time.Second)
 
-	newCard, _ = newSendCard(
-		nil,
-		withMarkdownText("test, \n**aaaaa**"),
-		withNote("提醒：点击对话框参与回复，可保持话题连贯"))
-
-	err = updateCard(ctx, &replayMsgId, newCard)
-	if err != nil {
-		log.Fatal(err)
+	msg := ""
+	for i := 0; i < 10; i++ {
+		time.Sleep(100 * time.Millisecond)
+		msg += "a"
+		newCard, _ = newSendCard(
+			nil,
+			withMarkdownText(msg),
+			withNote("提醒：点击对话框参与回复，可保持话题连贯"))
+		fmt.Println(msg)
+		// err = updateCard(ctx, &replayMsgId, newCard)
+		go updateCard(ctx, &replayMsgId, newCard)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 	}
+
 }
