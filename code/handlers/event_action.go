@@ -219,6 +219,7 @@ func (*MessageAction) Execute(a *ActionInfo) bool {
 	})
 	streamMsgId := ""
 	var streamCompletion openai.Messages
+	streamCompletion.Role = "assistant"
 	callback := func(completion openai.Messages, err error) {
 		checkError(a, err)
 		// fmt.Println(completions.Content, completions.Role)
