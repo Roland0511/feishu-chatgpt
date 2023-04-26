@@ -11,8 +11,9 @@ func TestCompletions(t *testing.T) {
 	config := initialization.LoadConfig("../../../config.yaml")
 
 	msgs := []openai.Messages{
-		// {Role: "system", Content: "你是一个专业的翻译官，负责中英文翻译。"},
-		{Role: "user", Content: "宇宙探索编辑部 这部电影的主演是谁？"},
+		{Role: "user", Content: "解释负载均衡"},
+		{Role: "assistant", Content: "🧰 毛毛正在网络上搜索...\n喵负载均衡（Load Balance）是一种在多个服务器、网络连接、CPU、磁盘驱动器或其他资源中分配负载的技术，目的是优化资源使用、最大化吞吐率、最小化响应时间，同时避免过载。负载均衡的主要作用是提高系统整体的响应速度和可用性，通过将网络流量平均分发到多个服务器上。喵"},
+		{Role: "user", Content: "吞吐量是什么意思"},
 	}
 
 	gpt := NewMMGPT(*config)
@@ -29,8 +30,9 @@ func TestStreamCompletions(t *testing.T) {
 	config := initialization.LoadConfig("../../../config.yaml")
 
 	msgs := []openai.Messages{
-		// {Role: "system", Content: "你是一个专业的翻译官，负责中英文翻译。"},
-		{Role: "user", Content: "宇宙探索编辑部 这部电影的主演是谁？"},
+		{Role: "user", Content: "解释负载均衡"},
+		{Role: "assistant", Content: "🧰 毛毛正在网络上搜索...\n喵负载均衡（Load Balance）是一种在多个服务器、网络连接、CPU、磁盘驱动器或其他资源中分配负载的技术，目的是优化资源使用、最大化吞吐率、最小化响应时间，同时避免过载。负载均衡的主要作用是提高系统整体的响应速度和可用性，通过将网络流量平均分发到多个服务器上。喵"},
+		{Role: "user", Content: "吞吐量是什么意思"},
 	}
 
 	gpt := NewMMGPT(*config)
